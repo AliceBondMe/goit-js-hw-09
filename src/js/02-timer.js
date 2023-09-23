@@ -15,7 +15,7 @@ refs.btnStart.setAttribute("disabled", "");
 let finishTime = null;
 let intervalId = null;
 
-// flatpickr settings 
+// flatpickr settings  
 const options = {
   enableTime: true,
   time_24hr: true,
