@@ -5,6 +5,7 @@ import Notiflix from 'notiflix';
 const refs = {
     dateTimePicker: document.querySelector("#datetime-picker"),
     btnStart: document.querySelector("button[data-start]"),
+    btnReset: document.querySelector("button[data-reset]"),
     days: document.querySelector("span[data-days]"),
     hours: document.querySelector("span[data-hours]"),
     minutes: document.querySelector("span[data-minutes]"),
@@ -12,21 +13,20 @@ const refs = {
 }
 
 refs.btnStart.setAttribute("disabled", "");
-let finishTime = null;
 let intervalId = null;
 
-// flatpickr settings 
+// flatpickr settings
 const options = {
   enableTime: true,
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
     onClose(selectedDates) {
-        if (selectedDates[0] <= Date.now()) {
-          refs.btnStart.setAttribute("disabled", "");
-            Notiflix.Notify.failure('Please choose a date in the future');
-        } else {
-            refs.btnStart.removeAttribute("disabled");
+      if (selectedDates[0] <= Date.now()) {
+        disableField(refs.btnStart);
+        Notiflix.Notify.failure('Please choose a date in the future');
+      } else {
+        activateField(refs.btnStart);
       }
     console.log(selectedDates[0]);
   },
@@ -38,13 +38,20 @@ const fp = flatpickr(refs.dateTimePicker, options);
 
 
 refs.btnStart.addEventListener("click", onStartClick);
+refs.btnReset.addEventListener("click", onResetClick);
 
 function onStartClick() {
-  refs.btnStart.setAttribute("disabled", "");
+  disableField(refs.btnStart);
+  disableField(refs.dateTimePicker);
   const finishTime = fp.selectedDates[0];
   setTimer(finishTime);
 }
 
+function onResetClick() {
+  clearInterval(intervalId);
+  renderTimer({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  activateField(refs.dateTimePicker);
+}
 
 
 function setTimer(finishTime) {
@@ -57,6 +64,8 @@ function setTimer(finishTime) {
 
     if (msDiff<1000) {
       clearInterval(intervalId);
+      Notiflix.Notify.info('The timer has finished counting down. You can pick new date');
+      activateField(refs.dateTimePicker);
     }
     }, 1000)
 }
@@ -89,5 +98,12 @@ function convertMs(ms) {
 
 function addLeadingZero(value) {
     return value.toString().padStart(2, "0");
+}
 
+function disableField(field) {
+  field.setAttribute("disabled", "");
+}
+
+function activateField(field) {
+  field.removeAttribute("disabled");
 }
